@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: payment-grpc-server
+  grpc:
+    server:
+      port: 8072
+      enable-reflection: true
+    #    security:
+    #      enabled: true
+    #      certificateChain: file:certificates/server
+    #      privateKey: file:certificates/server
+  datasource:
+    url: jdbc:postgresql://localhost:5432/payment
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans

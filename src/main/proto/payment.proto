@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package payment;
+option java_package="com.derocode.payment";
+option java_multiple_files=true;
+option java_outer_classname="PaymentProto";
+
+enum RequestPaymentMethod {
+  PAYPAL=0;
+  CREDIT_CARD=1;
+  VISA_CARD=2;
+  MASTER_CARD=3;
+  AMERICAN_EXPRESS=4;
+  DISCOVER_CARD=5;
+  APPLE_PAY=6;
+  GOOGLE_PAY=7;
+  AMAZON_PAY=8;
+  BITCOIN=9;
+}
+
+message PaymentRequest {
+  double amount=2;
+  RequestPaymentMethod paymentMethod=3;
+  int32 orderId=4;
+  string orderReference=5;
+  string customerFirstName=6;
+  string customerLastName=7;
+  string customerEmail=8;
+
+}
+
+message PaymentResponse {
+  int32 id=1;
+}
+
+
+service PaymentService {
+  rpc CreatePayment(PaymentRequest) returns (PaymentResponse);
+
+}

@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package customer;
+option java_package="com.derocode.customer";
+option java_multiple_files=true;
+option java_outer_classname="CustomerProto";
+
+
+message CustomerAddress{
+  optional string street=1;
+  optional string houseNumber=2;
+  optional int64 zipCode=3;
+}
+
+message CustomerRequest{
+  string id=1;
+}
+
+
+message CustomerResponse{
+  optional string id=1;
+  optional string firstName=2;
+  optional string lastName=3;
+  optional string email=4;
+  optional CustomerAddress address=5;
+}
+
+message AddCustomerRequest{
+  optional string firstName=2;
+  optional string lastName=3;
+  optional string email=4;
+  optional CustomerAddress address=5;
+}
+
+message AddCustomerResponse{
+  optional string id=1;
+}
+
+message CustomerResponseList{
+  repeated CustomerResponse customerResponse=1;
+}
+
+message Empty{};
+
+
+service CustomerService{
+
+  rpc GetCustomerById(CustomerRequest) returns (CustomerResponse);
+
+}
