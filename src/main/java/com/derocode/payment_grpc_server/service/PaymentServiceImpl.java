@@ -5,8 +5,8 @@ import com.derocode.payment.PaymentRequest;
 import com.derocode.payment.PaymentServiceGrpc;
 import com.derocode.payment_grpc_server.configs.ServerInterceptorConfig;
 import com.derocode.payment_grpc_server.kafka.KafkaProducer;
+import com.derocode.payment_grpc_server.mapper.LombokMapperImpl;
 import com.derocode.payment_grpc_server.models.Payment;
-import com.derocode.payment_grpc_server.models.PaymentMethod;
 import com.derocode.payment_grpc_server.records.PaymentConfirmation;
 import com.derocode.payment_grpc_server.repository.PaymentRepository;
 import io.grpc.stub.StreamObserver;
@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.grpc.server.service.GrpcService;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @GrpcService(interceptors = ServerInterceptorConfig.class)
@@ -24,29 +23,22 @@ public class PaymentServiceImpl extends PaymentServiceGrpc.PaymentServiceImplBas
 
     private final PaymentRepository paymentRepository;
     private final KafkaProducer kafkaProducerService;
+    private final LombokMapperImpl lombokMapper;
+
 
     @Override
     public void createPayment(PaymentRequest request, StreamObserver<PaymentResponse> responseObserver) {
 
-        Payment payment = Payment.builder()
-                .amount(BigDecimal.valueOf(request.getAmount()))
-                .paymentMethod(PaymentMethod.valueOf(request.getPaymentMethod().name()))
-                .orderId(request.getOrderId())
-                .createdDate(LocalDateTime.now())
-                .build();
+        Payment entity = lombokMapper.toEntity(request);
+        entity.setPaymentDate(LocalDateTime.now());
+        Payment savedEntity = paymentRepository.save(entity);
 
-        PaymentResponse paymentResponse = PaymentResponse.newBuilder()
-                .setId(paymentRepository.save(payment).getId())
-                .build();
+        PaymentResponse paymentResponse = lombokMapper.toResponse(savedEntity);
 
-        PaymentConfirmation paymentConfirmation = new PaymentConfirmation(
-                request.getOrderReference(),
-                request.getAmount(),
-                PaymentMethod.valueOf(request.getPaymentMethod().name()),
-                request.getCustomerFirstName(),
-                request.getCustomerLastName(),
-                request.getCustomerEmail()
-        );
+        PaymentConfirmation paymentConfirmation = lombokMapper.respToConfirmation(paymentResponse);
+        paymentConfirmation.setCustomerEmail(request.getCustomerEmail());
+        paymentConfirmation.setCustomerFirstName(request.getCustomerFirstName());
+        paymentConfirmation.setCustomerLastName(request.getCustomerLastName());
 
         log.info("Kafka notification request with body: <{}>", paymentConfirmation);
 

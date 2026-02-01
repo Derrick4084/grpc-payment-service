@@ -6,7 +6,9 @@ import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ServerInterceptorConfig implements ServerInterceptor {
 
     private static final Logger log = LoggerFactory.getLogger(ServerInterceptorConfig.class);

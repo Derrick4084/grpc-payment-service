@@ -23,7 +23,7 @@ import static jakarta.persistence.EnumType.STRING;
 public class Payment {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     private BigDecimal amount;
@@ -33,11 +33,15 @@ public class Payment {
 
     private Integer orderId;
 
+    private String orderReference;
+
     @CreatedDate
     @Column(updatable = false, nullable = false)
-    private LocalDateTime createdDate;
+    private LocalDateTime paymentDate;
 
     @LastModifiedDate
     @Column(insertable = false)
     private LocalDateTime lastModifiedDate;
+
+
 }

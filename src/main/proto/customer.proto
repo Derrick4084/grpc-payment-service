@@ -5,35 +5,27 @@ option java_package="com.derocode.customer";
 option java_multiple_files=true;
 option java_outer_classname="CustomerProto";
 
-
-message CustomerAddress{
-  optional string street=1;
-  optional string houseNumber=2;
-  optional int64 zipCode=3;
-}
-
 message CustomerRequest{
   string id=1;
 }
-
 
 message CustomerResponse{
   optional string id=1;
   optional string firstName=2;
   optional string lastName=3;
   optional string email=4;
-  optional CustomerAddress address=5;
+  optional string street=5;
+  optional string houseNumber=6;
+  optional int64 zipCode=7;
 }
 
 message AddCustomerRequest{
   optional string firstName=2;
   optional string lastName=3;
   optional string email=4;
-  optional CustomerAddress address=5;
-}
-
-message AddCustomerResponse{
-  optional string id=1;
+  optional string street=5;
+  optional string houseNumber=6;
+  optional int64 zipCode=7;
 }
 
 message CustomerResponseList{
@@ -45,6 +37,12 @@ message Empty{};
 
 service CustomerService{
 
+  rpc AddCustomer(AddCustomerRequest) returns (CustomerResponse);
+
   rpc GetCustomerById(CustomerRequest) returns (CustomerResponse);
+
+  rpc GetAllCustomers(Empty) returns (CustomerResponseList);
+
+  rpc DeleteCustomer(CustomerRequest) returns (Empty);
 
 }

@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "google/protobuf/timestamp.proto";
+
 package payment;
 option java_package="com.derocode.payment";
 option java_multiple_files=true;
@@ -20,7 +22,7 @@ enum RequestPaymentMethod {
 
 message PaymentRequest {
   double amount=2;
-  RequestPaymentMethod paymentMethod=3;
+  string paymentMethod=3;
   int32 orderId=4;
   string orderReference=5;
   string customerFirstName=6;
@@ -31,6 +33,11 @@ message PaymentRequest {
 
 message PaymentResponse {
   int32 id=1;
+  double amount=2;
+  string paymentMethod=3;
+  int32 orderId=4;
+  string orderReference=5;
+  google.protobuf.Timestamp paymentDate=6;
 }
 
 
