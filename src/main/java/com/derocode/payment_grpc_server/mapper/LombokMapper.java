@@ -31,11 +31,11 @@ public interface LombokMapper {
     PaymentResponse toResponse(Payment entity);
 
 
-    @Mapping(target = "customerFirstName", ignore = true)
-    @Mapping(target = "customerLastName", ignore = true)
-    @Mapping(target = "customerEmail", ignore = true)
-    @Mapping(target = "paymentDate", source = "paymentDate")
-    PaymentConfirmation respToConfirmation(PaymentResponse paymentResponse);
+    @Mapping(target = "orderReference", source = "paymentResponse.orderReference")
+    @Mapping(target = "amount", source = "paymentResponse.amount")
+    @Mapping(target = "paymentMethod", source = "paymentResponse.paymentMethod")
+    @Mapping(target = "paymentDate", source = "paymentResponse.paymentDate")
+    PaymentConfirmation respToConfirmation(PaymentResponse paymentResponse, PaymentRequest paymentRequest);
 
 
 

@@ -33,13 +33,11 @@ public class PaymentServiceImpl extends PaymentServiceGrpc.PaymentServiceImplBas
         entity.setPaymentDate(LocalDateTime.now());
         Payment savedEntity = paymentRepository.save(entity);
 
+
         PaymentResponse paymentResponse = lombokMapper.toResponse(savedEntity);
 
-        PaymentConfirmation paymentConfirmation = lombokMapper.respToConfirmation(paymentResponse);
-        paymentConfirmation.setCustomerEmail(request.getCustomerEmail());
-        paymentConfirmation.setCustomerFirstName(request.getCustomerFirstName());
-        paymentConfirmation.setCustomerLastName(request.getCustomerLastName());
-
+        PaymentConfirmation paymentConfirmation = lombokMapper.respToConfirmation(paymentResponse, request);
+//
         log.info("Kafka notification request with body: <{}>", paymentConfirmation);
 
         kafkaProducerService.sendMessage(paymentConfirmation);

@@ -3,8 +3,6 @@ package com.derocode.payment_grpc_server.records;
 import lombok.*;
 import java.util.Objects;
 
-
-
 @Getter
 @Setter
 @NoArgsConstructor
