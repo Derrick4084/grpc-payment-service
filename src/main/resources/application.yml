@@ -2,7 +2,7 @@ spring:
   application:
     name: grpc-payment-service
   config:
-    import: aws-secretsmanager:${POSTGRES_DB_SECRET_ARN}?prefix=postgres.
+    import: aws-secretsmanager:${POSTGRES_DB_SECRET_NAME}?prefix=postgres.
   grpc:
     client:
       customer:
@@ -52,10 +52,10 @@ spring:
         protocol: SASL_SSL
 
 
-management:
-  tracing:
-    sampling:
-      probability: 1.0
+#management:
+#  tracing:
+#    sampling:
+#      probability: 1.0
 #  zipkin:
 #    tracing:
 #      endpoint: http://localhost:9411/api/v2/spans
