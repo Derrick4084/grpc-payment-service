@@ -6,43 +6,39 @@ import brave.grpc.GrpcTracing;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import com.derocode.customer.CustomerServiceGrpc;
 import com.derocode.customer.CustomerResponse;
 
-@Service
+@Component
 @Slf4j
 public class CustomerGrpcClient {
 
+    private final CustomerServiceGrpc.CustomerServiceBlockingStub stub;
 
-    private final ManagedChannel managedChannel;
-    private final CustomerServiceGrpc.CustomerServiceBlockingStub customerServiceBlockingStub;
+    public CustomerGrpcClient(@Value("${spring.grpc.client.customer.port}") int port,
+                              @Value("${spring.grpc.client.customer.host}") String host) {
 
+        //        GrpcTracing grpcTracing = GrpcTracing.create(
+//                Tracing.newBuilder()
+//                        .localIp("127.0.0.1")
+//                        .localPort(9144)
+//                        .localServiceName("ProductService")
+//                        .build()
+//        );
 
-    public CustomerGrpcClient() {
-        this(ManagedChannelBuilder.forAddress("localhost", 8050).usePlaintext());
+        ManagedChannel managedChannel = ManagedChannelBuilder
+                .forAddress(host,port)
+                .usePlaintext()
+                .build();
+
+        this.stub = CustomerServiceGrpc.newBlockingStub(managedChannel);
     }
 
-    public CustomerGrpcClient(ManagedChannelBuilder<?> usePlainText) {
-
-        GrpcTracing grpcTracing = GrpcTracing.create(
-                Tracing.newBuilder()
-                        .localIp("127.0.0.1")
-                        .localPort(9144)
-                        .localServiceName("CustomerService")
-                        .build()
-        );
-        managedChannel = usePlainText.intercept(grpcTracing.newClientInterceptor()).build();
-        customerServiceBlockingStub = CustomerServiceGrpc.newBlockingStub(managedChannel);
+    public CustomerResponse getCustomerById(com.derocode.customer.CustomerRequest request) {
+        return stub.getCustomerById(request);
     }
-
-    public CustomerResponse getCustomerById(com.derocode.customer.CustomerRequest request){
-        return customerServiceBlockingStub.getCustomerById(request);
-    }
-
-    public void disconnectChannel() {
-        final ManagedChannel shutdown = managedChannel.shutdown();
-    }
-
 
 }

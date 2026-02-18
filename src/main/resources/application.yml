@@ -1,18 +1,24 @@
 spring:
   application:
-    name: payment-grpc-server
+    name: grpc-payment-service
+  config:
+    import: aws-secretsmanager:${POSTGRES_DB_SECRET_ARN}?prefix=postgres.
   grpc:
+    client:
+      customer:
+        host: ${CUSTOMER_SERVICE_ADDR}
+        port: {GRPC_PORT}
     server:
-      port: 8072
+      port: 9090
       enable-reflection: true
     #    security:
     #      enabled: true
     #      certificateChain: file:certificates/server
     #      privateKey: file:certificates/server
   datasource:
-    url: jdbc:postgresql://localhost:5432/payment
-    username: postgres
-    password: postgres
+    url: jdbc:postgresql://${postgres.host}/microservicesdb?sslmode=verify-full&sslrootcert=/app/certs/rds-combined-ca-bundle.pem
+    username: ${postgres.username}
+    password: ${postgres.password}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -25,16 +31,31 @@ spring:
     enabled: true
     baseline-description: "init"
     baseline-version: 0
-    user: ${spring.datasource.username}
-    password: ${spring.datasource.password}
+    user: ${postgres.username}
+    password: ${postgres.password}
   kafka:
-    producer:
-      bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    properties:
+      ssl:
+        endpoint:
+          identification:
+            algorithm:
+      sasl:
+        client:
+          callback:
+            handler:
+              class: software.amazon.msk.auth.iam.IAMClientCallbackHandler
+        jas:
+          config: software.amazon.msk.auth.iam.IAMLoginModule required;
+        mechanism: AWS_MSK_IAM
+      security:
+        protocol: SASL_SSL
+
 
 management:
   tracing:
     sampling:
       probability: 1.0
-  zipkin:
-    tracing:
-      endpoint: http://localhost:9411/api/v2/spans
+#  zipkin:
+#    tracing:
+#      endpoint: http://localhost:9411/api/v2/spans
