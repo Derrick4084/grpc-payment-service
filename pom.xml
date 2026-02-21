@@ -99,8 +99,6 @@
         <dependency>
             <groupId>io.awspring.cloud</groupId>
             <artifactId>spring-cloud-aws-starter-secrets-manager</artifactId>
-            <version>4.0.0-M1</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>software.amazon.msk</groupId>
@@ -157,6 +155,14 @@
                 <groupId>org.springframework.grpc</groupId>
                 <artifactId>spring-grpc-dependencies</artifactId>
                 <version>${spring-grpc.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>io.awspring.cloud</groupId>
+                <artifactId>spring-cloud-aws-dependencies</artifactId>
+                <version>4.0.0</version> <!-- use GA, not milestone -->
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

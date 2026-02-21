@@ -9,7 +9,11 @@ RUN mvn clean package -DskipTests
 # Runtime
 FROM amazoncorretto:21-alpine
 
-RUN apk --no-cache add curl ca-certificates
+RUN apk --no-cache add curl wget ca-certificates
+
+RUN GRPC_HEALTH_PROBE_VERSION=v0.4.24 && \
+    wget -qO/bin/grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${GRPC_HEALTH_PROBE_VERSION}/grpc_health_probe-linux-amd64 && \
+    chmod +x /bin/grpc_health_probe
 
 # Download AWS RDS / DocumentDB CA bundle
 RUN mkdir -p /app/certs && \

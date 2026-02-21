@@ -8,7 +8,6 @@ import io.grpc.ManagedChannelBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import com.derocode.customer.CustomerServiceGrpc;
 import com.derocode.customer.CustomerResponse;
 
@@ -21,13 +20,13 @@ public class CustomerGrpcClient {
     public CustomerGrpcClient(@Value("${spring.grpc.client.customer.port}") int port,
                               @Value("${spring.grpc.client.customer.host}") String host) {
 
-        //        GrpcTracing grpcTracing = GrpcTracing.create(
+//                GrpcTracing grpcTracing = GrpcTracing.create(
 //                Tracing.newBuilder()
 //                        .localIp("127.0.0.1")
 //                        .localPort(9144)
 //                        .localServiceName("ProductService")
 //                        .build()
-//        );
+//                );
 
         ManagedChannel managedChannel = ManagedChannelBuilder
                 .forAddress(host,port)
