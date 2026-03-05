@@ -1,9 +1,7 @@
-drop table if exists payment cascade;
-
-create table if not exists payment
+create table payment
 (
-    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    order_id INT NULL,
+    id integer generated always as identity primary key,
+    order_id integer NULL,
     order_reference varchar(255) NULL,
     amount numeric(38, 2) NULL,
     payment_date timestamp(6) NOT NULL,
