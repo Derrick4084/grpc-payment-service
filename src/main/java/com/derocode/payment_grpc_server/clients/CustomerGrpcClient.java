@@ -17,8 +17,7 @@ public class CustomerGrpcClient {
 
     private final CustomerServiceGrpc.CustomerServiceBlockingStub stub;
 
-    public CustomerGrpcClient(@Value("${spring.grpc.client.customer.port}") int port,
-                              @Value("${spring.grpc.client.customer.host}") String host) {
+    public CustomerGrpcClient(@Value("${grpc.client.customer}") String host) {
 
 //                GrpcTracing grpcTracing = GrpcTracing.create(
 //                Tracing.newBuilder()
@@ -29,7 +28,7 @@ public class CustomerGrpcClient {
 //                );
 
         ManagedChannel managedChannel = ManagedChannelBuilder
-                .forAddress(host,port)
+                .forTarget(host)
                 .usePlaintext()
                 .build();
 
