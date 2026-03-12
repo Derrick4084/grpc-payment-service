@@ -17,7 +17,7 @@ public class CustomerGrpcClient {
 
     private final CustomerServiceGrpc.CustomerServiceBlockingStub stub;
 
-    public CustomerGrpcClient(@Value("${grpc.client.customer}") String host) {
+    public CustomerGrpcClient(@Value("${grpc.client.customer.address}") String host) {
 
 //                GrpcTracing grpcTracing = GrpcTracing.create(
 //                Tracing.newBuilder()
