@@ -31,6 +31,9 @@ public class Payment {
     @Enumerated(STRING)
     private PaymentMethod paymentMethod;
 
+    @Enumerated(STRING)
+    private PaymentStatus status;
+
     private Integer orderId;
 
     private String orderReference;

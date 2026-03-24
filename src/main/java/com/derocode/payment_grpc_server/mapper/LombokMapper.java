@@ -28,16 +28,18 @@ public interface LombokMapper {
     @Mapping(target = "paymentMethod", qualifiedByName = "paymentMethodString")
     @Mapping(target = "amount", qualifiedByName = "bigDecimalToDouble")
     @Mapping(target = "paymentDate", source = "paymentDate")
-    PaymentResponse toResponse(Payment entity);
+    PaymentResponse entityToResponse(Payment entity);
 
+    @Mapping(target = "paymentMethod", qualifiedByName = "paymentMethodString")
+    @Mapping(target = "amount", qualifiedByName = "bigDecimalToDouble")
+    @Mapping(target = "customerFirstName", ignore = true)
+    @Mapping(target = "customerLastName", ignore = true)
+    @Mapping(target = "customerEmail", ignore = true)
+    PaymentConfirmation entityToConfirmation(Payment entity);
 
-    @Mapping(target = "orderReference", source = "paymentResponse.orderReference")
-    @Mapping(target = "amount", source = "paymentResponse.amount")
-    @Mapping(target = "paymentMethod", source = "paymentResponse.paymentMethod")
-    @Mapping(target = "paymentDate", source = "paymentResponse.paymentDate")
-    PaymentConfirmation respToConfirmation(PaymentResponse paymentResponse, PaymentRequest paymentRequest);
-
-
+    @Mapping(target = "paymentDate", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    PaymentConfirmation reqToConfirmation(PaymentRequest paymentRequest);
 
     @Named("doubleToBigDecimal")
     default BigDecimal doubleToBigDecimal(double price) {

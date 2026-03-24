@@ -32,12 +32,13 @@ message PaymentRequest {
 }
 
 message PaymentResponse {
-  int32 id=1;
-  double amount=2;
-  string paymentMethod=3;
-  int32 orderId=4;
-  string orderReference=5;
-  google.protobuf.Timestamp paymentDate=6;
+  optional int32 id=1;
+  optional double amount=2;
+  optional string paymentMethod=3;
+  optional string status=4;
+  optional int32 orderId=5;
+  optional string orderReference=6;
+  optional google.protobuf.Timestamp paymentDate=7;
 }
 
 

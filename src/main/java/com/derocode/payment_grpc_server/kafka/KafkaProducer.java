@@ -4,6 +4,8 @@ import com.derocode.payment_grpc_server.records.PaymentConfirmation;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 @Service
 public class KafkaProducer {
 
@@ -15,7 +17,14 @@ public class KafkaProducer {
 
     public void sendMessage(PaymentConfirmation message)
     {
-        kafkaTemplate.send("payment-topic", message);
+        String paymentStatus = message.getStatus();
+
+        if (Objects.equals(paymentStatus,"ACCEPTED")){
+            kafkaTemplate.send("payment-success", message);
+        } else if (Objects.equals(paymentStatus, "DENIED")) {
+            kafkaTemplate.send("payment-failure", message);
+        }
+
     }
 
 }

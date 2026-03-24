@@ -7,6 +7,8 @@ create table payment
     payment_date timestamp(6) NOT NULL,
     last_modified_date timestamp(6) NULL,
     payment_method varchar(255) NULL,
-    CONSTRAINT payment_payment_method_check CHECK (((payment_method)::text = ANY (ARRAY[('PAYPAL'::character varying)::text,('CREDIT_CARD'::character varying)::text,('VISA_CARD'::character varying)::text,('MASTER_CARD'::character varying)::text,('AMERICAN_EXPRESS'::character varying)::text,('DISCOVER_CARD'::character varying)::text,('APPLE_PAY'::character varying)::text,('GOOGLE_PAY'::character varying)::text,('AMAZON_PAY'::character varying)::text,('BITCOIN'::character varying)::text])))
+    status varchar(25) NULL,
+    CONSTRAINT payment_payment_method_check CHECK (((payment_method)::text = ANY (ARRAY[('PAYPAL'::character varying)::text,('CREDIT_CARD'::character varying)::text,('VISA_CARD'::character varying)::text,('MASTER_CARD'::character varying)::text,('AMERICAN_EXPRESS'::character varying)::text,('DISCOVER_CARD'::character varying)::text,('APPLE_PAY'::character varying)::text,('GOOGLE_PAY'::character varying)::text,('AMAZON_PAY'::character varying)::text,('BITCOIN'::character varying)::text]))),
+    CONSTRAINT payment_payment_status_check CHECK (((status)::text = ANY (ARRAY[('ACCEPTED'::character varying)::text,('DENIED'::character varying)::text])))
 );
 

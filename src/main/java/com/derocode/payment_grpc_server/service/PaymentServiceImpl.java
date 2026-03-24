@@ -7,14 +7,20 @@ import com.derocode.payment_grpc_server.configs.ServerInterceptorConfig;
 import com.derocode.payment_grpc_server.kafka.KafkaProducer;
 import com.derocode.payment_grpc_server.mapper.LombokMapperImpl;
 import com.derocode.payment_grpc_server.models.Payment;
+import com.derocode.payment_grpc_server.models.PaymentStatus;
 import com.derocode.payment_grpc_server.records.PaymentConfirmation;
 import com.derocode.payment_grpc_server.repository.PaymentRepository;
+import com.google.protobuf.Timestamp;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.grpc.server.service.GrpcService;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Objects;
 
 @GrpcService(interceptors = ServerInterceptorConfig.class)
 @RequiredArgsConstructor
@@ -25,25 +31,47 @@ public class PaymentServiceImpl extends PaymentServiceGrpc.PaymentServiceImplBas
     private final KafkaProducer kafkaProducerService;
     private final LombokMapperImpl lombokMapper;
 
-
     @Override
     public void createPayment(PaymentRequest request, StreamObserver<PaymentResponse> responseObserver) {
 
         Payment entity = lombokMapper.toEntity(request);
         entity.setPaymentDate(LocalDateTime.now());
-        Payment savedEntity = paymentRepository.save(entity);
+        entity.setStatus(PaymentStatus.ACCEPTED);
+
+        Payment savedEntity = null;
+        try{
+            savedEntity = paymentRepository.save(entity);
+        } catch (DataAccessException e) {
+
+            PaymentConfirmation paymentConfirmation = lombokMapper.reqToConfirmation(request);
+            paymentConfirmation.setPaymentDate(LocalDateTime.now().toString());
+            paymentConfirmation.setStatus(PaymentStatus.DENIED.name());
+            log.info("Kafka payment failure with body: <{}>", paymentConfirmation);
+            kafkaProducerService.sendMessage(paymentConfirmation);
+            PaymentResponse paymentResponse = lombokMapper.entityToResponse(entity);
+            responseObserver.onNext(paymentResponse);
+            responseObserver.onCompleted();
+        }
+
+        if (Objects.nonNull(savedEntity)) {
+            PaymentConfirmation paymentConfirmation = lombokMapper.entityToConfirmation(savedEntity);
+            paymentConfirmation.setCustomerFirstName(request.getCustomerFirstName());
+            paymentConfirmation.setCustomerLastName(request.getCustomerLastName());
+            paymentConfirmation.setCustomerEmail(request.getCustomerEmail());
+
+            log.info("Kafka payment success with body: <{}>", paymentConfirmation);
+            kafkaProducerService.sendMessage(paymentConfirmation);
+
+            PaymentResponse paymentResponse = lombokMapper.entityToResponse(savedEntity);
+            responseObserver.onNext(paymentResponse);
+            responseObserver.onCompleted();
+
+        }
 
 
-        PaymentResponse paymentResponse = lombokMapper.toResponse(savedEntity);
 
-        PaymentConfirmation paymentConfirmation = lombokMapper.respToConfirmation(paymentResponse, request);
-//
-        log.info("Kafka notification request with body: <{}>", paymentConfirmation);
 
-        kafkaProducerService.sendMessage(paymentConfirmation);
 
-        responseObserver.onNext(paymentResponse);
-        responseObserver.onCompleted();
 
     }
 }
