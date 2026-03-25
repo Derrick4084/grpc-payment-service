@@ -58,8 +58,9 @@ public class PaymentServiceImpl extends PaymentServiceGrpc.PaymentServiceImplBas
             paymentConfirmation.setCustomerFirstName(request.getCustomerFirstName());
             paymentConfirmation.setCustomerLastName(request.getCustomerLastName());
             paymentConfirmation.setCustomerEmail(request.getCustomerEmail());
+            paymentConfirmation.setStatus(PaymentStatus.ACCEPTED.name());
 
-            log.info("Kafka payment success with body: <{}>", paymentConfirmation);
+            log.info("Sending Kafka payment success with body: <{}>", paymentConfirmation);
             kafkaProducerService.sendMessage(paymentConfirmation);
 
             PaymentResponse paymentResponse = lombokMapper.entityToResponse(savedEntity);

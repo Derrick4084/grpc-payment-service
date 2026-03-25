@@ -32,6 +32,7 @@ public interface LombokMapper {
 
     @Mapping(target = "paymentMethod", qualifiedByName = "paymentMethodString")
     @Mapping(target = "amount", qualifiedByName = "bigDecimalToDouble")
+    @Mapping(target = "status", ignore = true)
     @Mapping(target = "customerFirstName", ignore = true)
     @Mapping(target = "customerLastName", ignore = true)
     @Mapping(target = "customerEmail", ignore = true)
