@@ -41,7 +41,7 @@ public class PaymentServiceImpl extends PaymentServiceGrpc.PaymentServiceImplBas
         Payment savedEntity = null;
         try{
             savedEntity = paymentRepository.save(entity);
-        } catch (DataAccessException e) {
+        } catch (RuntimeException e) {
 
             PaymentConfirmation paymentConfirmation = lombokMapper.reqToConfirmation(request);
             paymentConfirmation.setPaymentDate(LocalDateTime.now().toString());
@@ -53,7 +53,7 @@ public class PaymentServiceImpl extends PaymentServiceGrpc.PaymentServiceImplBas
             responseObserver.onCompleted();
         }
 
-        if (Objects.nonNull(savedEntity)) {
+        if (savedEntity != null) {
             PaymentConfirmation paymentConfirmation = lombokMapper.entityToConfirmation(savedEntity);
             paymentConfirmation.setCustomerFirstName(request.getCustomerFirstName());
             paymentConfirmation.setCustomerLastName(request.getCustomerLastName());
