@@ -51,8 +51,8 @@ public class PaymentServiceImpl extends PaymentServiceGrpc.PaymentServiceImplBas
                 log.info("Kafka payment failure with body: <{}>", paymentConfirmation);
                 kafkaProducerService.sendMessage(paymentConfirmation);
                 PaymentResponse paymentResponse = lombokMapper.entityToResponse(entity);
-                responseObserver.onNext(paymentResponse);
-                responseObserver.onCompleted();
+                log.error("Unhandled exception in savePayment", e);
+                responseObserver.onError(Status.INTERNAL.withDescription(e.getMessage()).asRuntimeException());
                 return;
             }
 

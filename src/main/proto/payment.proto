@@ -21,14 +21,13 @@ enum RequestPaymentMethod {
 }
 
 message PaymentRequest {
-  double amount=2;
-  string paymentMethod=3;
-  int32 orderId=4;
-  string orderReference=5;
-  string customerFirstName=6;
-  string customerLastName=7;
-  string customerEmail=8;
-
+  double amount=1;
+  string paymentMethod=2;
+  int32 orderId=3;
+  string orderReference=4;
+  string customerFirstName=5;
+  string customerLastName=6;
+  string customerEmail=7;
 }
 
 message PaymentResponse {
