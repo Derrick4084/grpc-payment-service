@@ -11,6 +11,7 @@ import com.derocode.payment_grpc_server.models.PaymentStatus;
 import com.derocode.payment_grpc_server.records.PaymentConfirmation;
 import com.derocode.payment_grpc_server.repository.PaymentRepository;
 import com.google.protobuf.Timestamp;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,26 +35,27 @@ public class PaymentServiceImpl extends PaymentServiceGrpc.PaymentServiceImplBas
     @Override
     public void createPayment(PaymentRequest request, StreamObserver<PaymentResponse> responseObserver) {
 
-        Payment entity = lombokMapper.toEntity(request);
-        entity.setPaymentDate(LocalDateTime.now());
-        entity.setStatus(PaymentStatus.ACCEPTED);
-
-        Payment savedEntity = null;
         try{
-            savedEntity = paymentRepository.save(entity);
-        } catch (RuntimeException e) {
 
-            PaymentConfirmation paymentConfirmation = lombokMapper.reqToConfirmation(request);
-            paymentConfirmation.setPaymentDate(LocalDateTime.now().toString());
-            paymentConfirmation.setStatus(PaymentStatus.DENIED.name());
-            log.info("Kafka payment failure with body: <{}>", paymentConfirmation);
-            kafkaProducerService.sendMessage(paymentConfirmation);
-            PaymentResponse paymentResponse = lombokMapper.entityToResponse(entity);
-            responseObserver.onNext(paymentResponse);
-            responseObserver.onCompleted();
-        }
+            Payment entity = lombokMapper.toEntity(request);
+            entity.setPaymentDate(LocalDateTime.now());
+            entity.setStatus(PaymentStatus.ACCEPTED);
 
-        if (savedEntity != null) {
+            Payment savedEntity = null;
+            try{
+                savedEntity = paymentRepository.save(entity);
+            } catch (RuntimeException e) {
+                PaymentConfirmation paymentConfirmation = lombokMapper.reqToConfirmation(request);
+                paymentConfirmation.setPaymentDate(LocalDateTime.now().toString());
+                paymentConfirmation.setStatus(PaymentStatus.DENIED.name());
+                log.info("Kafka payment failure with body: <{}>", paymentConfirmation);
+                kafkaProducerService.sendMessage(paymentConfirmation);
+                PaymentResponse paymentResponse = lombokMapper.entityToResponse(entity);
+                responseObserver.onNext(paymentResponse);
+                responseObserver.onCompleted();
+                return;
+            }
+
             PaymentConfirmation paymentConfirmation = lombokMapper.entityToConfirmation(savedEntity);
             paymentConfirmation.setCustomerFirstName(request.getCustomerFirstName());
             paymentConfirmation.setCustomerLastName(request.getCustomerLastName());
@@ -67,12 +69,16 @@ public class PaymentServiceImpl extends PaymentServiceGrpc.PaymentServiceImplBas
             responseObserver.onNext(paymentResponse);
             responseObserver.onCompleted();
 
+
+        } catch (Exception e) {
+            log.error("Unhandled exception in createPayment", e);
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription(e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
         }
-
-
-
-
-
 
     }
 }
