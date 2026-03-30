@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import com.derocode.customer.CustomerServiceGrpc;
 import com.derocode.customer.CustomerResponse;
+import com.derocode.customer.CustomerRequest;
 
 @Component
 @Slf4j
@@ -35,7 +36,7 @@ public class CustomerGrpcClient {
         this.stub = CustomerServiceGrpc.newBlockingStub(managedChannel);
     }
 
-    public CustomerResponse getCustomerById(com.derocode.customer.CustomerRequest request) {
+    public CustomerResponse getCustomerById(CustomerRequest request) {
         return stub.getCustomerById(request);
     }
 
