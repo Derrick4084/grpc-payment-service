@@ -18,14 +18,6 @@ public class KafkaProducer {
     public void sendMessage(PaymentConfirmation message)
     {
         kafkaTemplate.send("payment-status", message);
-//        String paymentStatus = message.getStatus();
-//
-//        if (Objects.equals(paymentStatus,"ACCEPTED")){
-//            kafkaTemplate.send("payment-success", message);
-//        } else if (Objects.equals(paymentStatus, "DENIED")) {
-//            kafkaTemplate.send("payment-failure", message);
-//        }
-
     }
 
 }

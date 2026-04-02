@@ -4,6 +4,7 @@ import com.derocode.payment.PaymentResponse;
 import com.derocode.payment_grpc_server.models.Payment;
 import com.derocode.payment_grpc_server.models.PaymentMethod;
 import com.derocode.payment_grpc_server.records.PaymentConfirmation;
+import org.jspecify.annotations.NonNull;
 import org.mapstruct.Mapper;
 import com.derocode.payment.PaymentRequest;
 import org.mapstruct.Mapping;
@@ -48,7 +49,7 @@ public interface LombokMapper {
     }
 
     @Named("bigDecimalToDouble")
-    default double bigDecimalToDouble(BigDecimal amount) {
+    default double bigDecimalToDouble(@NonNull BigDecimal amount) {
         return amount.doubleValue();
     }
 
@@ -58,7 +59,7 @@ public interface LombokMapper {
     }
 
     @Named("paymentMethodString")
-    default String paymentMethodString(PaymentMethod paymentMethod){
+    default String paymentMethodString(@NonNull PaymentMethod paymentMethod){
         return paymentMethod.name();
     }
 

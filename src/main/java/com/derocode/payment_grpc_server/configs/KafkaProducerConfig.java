@@ -8,6 +8,7 @@ import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,7 +28,7 @@ public class KafkaProducerConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootStrapServers;
 
-    private Map<String, Object> baseConfig() {
+    private @NonNull Map<String, Object> baseConfig() {
         Map<String, Object> props = new HashMap<>();
         props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootStrapServers);
         props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG,"SASL_SSL");
@@ -36,7 +37,6 @@ public class KafkaProducerConfig {
         props.put(SaslConfigs.SASL_CLIENT_CALLBACK_HANDLER_CLASS,"software.amazon.msk.auth.iam.IAMClientCallbackHandler");
         return props;
     }
-
 
     @Bean
     public ProducerFactory<String, PaymentConfirmation> producerFactory() {
@@ -57,7 +57,6 @@ public class KafkaProducerConfig {
         return new KafkaTemplate<>(producerFactory());
     }
 
-
     @Bean
     public KafkaAdmin admin() {
         Map<String,Object> config = new HashMap<>(baseConfig());
@@ -71,14 +70,4 @@ public class KafkaProducerConfig {
                 .replicas(2)
                 .build();
     }
-
-//    @Bean
-//    public NewTopic paymentFailureTopic() {
-//        return TopicBuilder.name("payment-failure")
-//                .partitions(3)
-//                .replicas(2)
-//                .build();
-//    }
-
-
 }
