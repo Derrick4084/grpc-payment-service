@@ -33,7 +33,7 @@ public class OrderGrpcClient {
                 .forTarget(host)
                 .defaultServiceConfig(Map.of(
                         "methodConfig", List.of(Map.of(
-                                "name", List.of(Map.of("service","com.derocode.order.OrderService")),
+                                "name", List.of(Map.of("service","order.OrderService")),
                                 "retryPolicy", Map.of(
                                         "maxAttempts", 5,
                                         "initialBackoff", "0.5s",

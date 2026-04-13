@@ -35,7 +35,7 @@ public class CustomerGrpcClient {
                 .forTarget(host)
                 .defaultServiceConfig(Map.of(
                         "methodConfig", List.of(Map.of(
-                                "name", List.of(Map.of("service","com.derocode.customer.CustomerService")),
+                                "name", List.of(Map.of("service","customer.CustomerService")),
                                 "retryPolicy", Map.of(
                                         "maxAttempts", 5,
                                         "initialBackoff", "0.5s",
