@@ -38,7 +38,7 @@ public class OrderGrpcClient {
                                         "maxAttempts", 5,
                                         "initialBackoff", "0.5s",
                                         "maxBackoff", "5s",
-                                        "backoffMultiplier", 2,
+                                        "backoffMultiplier", 2.0,
                                         "retryableStatusCodes", List.of("UNAVAILABLE", "DEADLINE_EXCEEDED")
                                 )
                         ))
