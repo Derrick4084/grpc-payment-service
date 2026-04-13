@@ -35,7 +35,7 @@ public class OrderGrpcClient {
                         "methodConfig", List.of(Map.of(
                                 "name", List.of(Map.of("service","order.OrderService")),
                                 "retryPolicy", Map.of(
-                                        "maxAttempts", 5,
+                                        "maxAttempts", 5.0,
                                         "initialBackoff", "0.5s",
                                         "maxBackoff", "5s",
                                         "backoffMultiplier", 2.0,
