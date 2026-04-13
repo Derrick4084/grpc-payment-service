@@ -17,7 +17,7 @@ public class KafkaProducer {
 
     public void sendMessage(PaymentConfirmation message)
     {
-        kafkaTemplate.send("payment-status", message);
+        kafkaTemplate.send("payment-info", message);
     }
 
 }

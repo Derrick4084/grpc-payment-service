@@ -1,27 +1,26 @@
 package com.derocode.payment_grpc_server.service;
 
+import com.derocode.payment.GetPaymentRequest;
 import com.derocode.payment.PaymentResponse;
 import com.derocode.payment.PaymentRequest;
 import com.derocode.payment.PaymentServiceGrpc;
 import com.derocode.payment_grpc_server.configs.ServerInterceptorConfig;
 import com.derocode.payment_grpc_server.kafka.KafkaProducer;
+
+
+//import com.derocode.payment_grpc_server.mapper.LombokMapperImpl;
 import com.derocode.payment_grpc_server.mapper.LombokMapperImpl;
 import com.derocode.payment_grpc_server.models.Payment;
 import com.derocode.payment_grpc_server.models.PaymentStatus;
 import com.derocode.payment_grpc_server.records.PaymentConfirmation;
 import com.derocode.payment_grpc_server.repository.PaymentRepository;
-import com.google.protobuf.Timestamp;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataAccessException;
 import org.springframework.grpc.server.service.GrpcService;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Objects;
+import java.util.Optional;
 
 @GrpcService(interceptors = ServerInterceptorConfig.class)
 @RequiredArgsConstructor
@@ -32,43 +31,46 @@ public class PaymentServiceImpl extends PaymentServiceGrpc.PaymentServiceImplBas
     private final KafkaProducer kafkaProducerService;
     private final LombokMapperImpl lombokMapper;
 
+    private Integer longToInt(Long value) {
+        if (value == null) return null;
+        if (value > Integer.MAX_VALUE || value < Integer.MIN_VALUE) {
+            throw new IllegalArgumentException("Value out of int range: " + value);
+        }
+        return value.intValue();
+    }
+
     @Override
     public void createPayment(PaymentRequest request, StreamObserver<PaymentResponse> responseObserver) {
 
         try{
-
-            Payment entity = lombokMapper.toEntity(request);
-            entity.setPaymentDate(LocalDateTime.now());
+            Payment entity = lombokMapper.reqToEntity(request);
             entity.setStatus(PaymentStatus.ACCEPTED);
 
             Payment savedEntity = null;
             try{
                 savedEntity = paymentRepository.save(entity);
             } catch (RuntimeException e) {
-                PaymentConfirmation paymentConfirmation = lombokMapper.reqToConfirmation(request);
-                paymentConfirmation.setPaymentDate(LocalDateTime.now().toString());
-                paymentConfirmation.setStatus(PaymentStatus.DENIED.name());
+                PaymentConfirmation paymentConfirmation = lombokMapper.errorPaymentConfirmation(request);
+
                 log.info("Kafka payment failure with body: <{}>", paymentConfirmation);
                 kafkaProducerService.sendMessage(paymentConfirmation);
-                PaymentResponse paymentResponse = lombokMapper.entityToResponse(entity);
+
                 log.error("Unhandled exception in savePayment", e);
                 responseObserver.onError(Status.INTERNAL.withDescription(e.getMessage()).asRuntimeException());
                 return;
             }
 
-            PaymentConfirmation paymentConfirmation = lombokMapper.entityToConfirmation(savedEntity);
+            PaymentConfirmation paymentConfirmation = lombokMapper.entityToPaymentConfirmation(savedEntity);
             paymentConfirmation.setCustomerFirstName(request.getCustomerFirstName());
             paymentConfirmation.setCustomerLastName(request.getCustomerLastName());
             paymentConfirmation.setCustomerEmail(request.getCustomerEmail());
             paymentConfirmation.setStatus(PaymentStatus.ACCEPTED.name());
-
             log.info("Sending Kafka payment success with body: <{}>", paymentConfirmation);
             kafkaProducerService.sendMessage(paymentConfirmation);
 
-            PaymentResponse paymentResponse = lombokMapper.entityToResponse(savedEntity);
+            PaymentResponse paymentResponse = lombokMapper.entityToPaymentResponse(savedEntity);
             responseObserver.onNext(paymentResponse);
             responseObserver.onCompleted();
-
 
         } catch (Exception e) {
             log.error("Unhandled exception in createPayment", e);
@@ -78,6 +80,25 @@ public class PaymentServiceImpl extends PaymentServiceGrpc.PaymentServiceImplBas
                             .withCause(e)
                             .asRuntimeException()
             );
+        }
+   }
+
+    @Override
+    public void getPayment(GetPaymentRequest request, StreamObserver<PaymentResponse> responseObserver) {
+        Optional<Payment> payment = paymentRepository.findById(longToInt(request.getId()));
+        if(payment.isEmpty())
+        {
+            log.error("No payment found with id: {}", request.getId());
+            responseObserver.onError(
+                    Status.NOT_FOUND
+                            .withDescription("No payment found with id: " + request.getId())
+                            .asRuntimeException()
+            );
+        } else {
+            PaymentResponse paymentResponse = lombokMapper.entityToPaymentResponse(payment.get());
+            responseObserver.onNext(paymentResponse);
+            responseObserver.onCompleted();
+
         }
 
     }

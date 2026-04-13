@@ -64,8 +64,8 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public NewTopic paymentStatusTopic() {
-        return TopicBuilder.name("payment-status")
+    public NewTopic paymentInformationTopic() {
+        return TopicBuilder.name("payment-info")
                 .partitions(3)
                 .replicas(2)
                 .build();

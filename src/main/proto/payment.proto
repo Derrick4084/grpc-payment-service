@@ -20,6 +20,10 @@ enum RequestPaymentMethod {
   BITCOIN=9;
 }
 
+message GetPaymentRequest {
+  int64 id=1;
+}
+
 message PaymentRequest {
   double amount=1;
   string paymentMethod=2;
@@ -40,8 +44,7 @@ message PaymentResponse {
   optional google.protobuf.Timestamp paymentDate=7;
 }
 
-
 service PaymentService {
   rpc CreatePayment(PaymentRequest) returns (PaymentResponse);
-
+  rpc GetPayment(GetPaymentRequest) returns (PaymentResponse);
 }

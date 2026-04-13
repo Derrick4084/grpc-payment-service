@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package order;
+option java_package="com.derocode.order";
+option java_multiple_files=true;
+option java_outer_classname="OrderProto";
+
+// Enum for order payment method
+enum PaymentMethod {
+  PAYPAL=0;
+  CREDIT_CARD=1;
+  VISA_CARD=2;
+  MASTER_CARD=3;
+  AMERICAN_EXPRESS=4;
+  DISCOVER_CARD=5;
+  APPLE_PAY=6;
+  GOOGLE_PAY=7;
+  AMAZON_PAY=8;
+  BITCOIN=9;
+}
+
+// Request and response for customer assigned to order
+message OrderCustomerRequest{
+  string id=1;
+}
+message OrderCustomerResponse{
+  optional string id=1;
+  optional string firstName=2;
+  optional string lastName=3;
+  optional string email=4;
+  optional OrderCustomerAddress address=5;
+}
+message OrderCustomerAddress{
+  optional string street=1;
+  optional string houseNumber=2;
+  optional int64 zipCode=3;
+}
+
+// Request and return for find order by Id
+message OrderRequest {
+  int32 id=1;
+}
+message OrderResponse {
+  optional int32 orderId=1;
+  optional string reference=2;
+  optional double totalAmount=3;
+  optional string paymentMethod=4;
+  optional string customerId=5;
+  optional string orderDate=6;
+  optional string status=7;
+  repeated OrderProductResponse products=8;
+}
+message OrderProductResponse {
+  optional int32 productId=1;
+  optional string name=2;
+  optional double price=3;
+  optional double quantity=4;
+}
+
+// Request and response for creating an order
+message CreateOrderProductRequest {
+  int32 productId=1;
+  double quantity=2;
+}
+message CreateOrderRequest {
+  string reference=1;
+  string paymentMethod=2;
+  string customerId=3;
+  repeated CreateOrderProductRequest products=4;
+}
+message CreateOrderResponse {
+  optional int32 orderId=1;
+  optional string reference=2;
+  optional double totalAmount=3;
+  optional string paymentMethod=4;
+  optional string customerId=5;
+  optional string orderDate=6;
+  optional string status=7;
+  repeated CreateOrderProductResponse products=8;
+}
+message CreateOrderProductResponse {
+  optional string name=1;
+  optional double price=2;
+  optional double quantity=3;
+}
+
+message OrderConfirmationResponse {
+  optional int32 id=1;
+}
+
+service OrderService {
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+  rpc GetOrder(OrderRequest) returns (OrderResponse);
+}

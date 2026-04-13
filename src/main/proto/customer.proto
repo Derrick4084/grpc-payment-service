@@ -9,23 +9,35 @@ message CustomerRequest{
   string id=1;
 }
 
+message AddCustomerAddress {
+  optional string houseNumber=1;
+  optional string street=2;
+  optional string city=3;
+  optional string state=4;
+  optional string zipCode=5;
+}
+
+message CustomerResponseAddress {
+  optional string houseNumber=1;
+  optional string street=2;
+  optional string city=3;
+  optional string state=4;
+  optional string zipCode=5;
+}
+
 message CustomerResponse{
   optional string id=1;
   optional string firstName=2;
   optional string lastName=3;
   optional string email=4;
-  optional string street=5;
-  optional string houseNumber=6;
-  optional int64 zipCode=7;
+  repeated CustomerResponseAddress addresses=5;
 }
 
 message AddCustomerRequest{
-  optional string firstName=2;
-  optional string lastName=3;
-  optional string email=4;
-  optional string street=5;
-  optional string houseNumber=6;
-  optional int64 zipCode=7;
+  optional string firstName=1;
+  optional string lastName=2;
+  optional string email=3;
+  repeated AddCustomerAddress addresses=4;
 }
 
 message CustomerResponseList{

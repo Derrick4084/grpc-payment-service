@@ -1,41 +1,39 @@
 package com.derocode.payment_grpc_server.clients;
 
 
-import brave.Tracing;
-import brave.grpc.GrpcTracing;
+import com.derocode.order.OrderServiceGrpc;
+import com.derocode.order.OrderResponse;
+import com.derocode.order.OrderRequest;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import com.derocode.customer.CustomerServiceGrpc;
-import com.derocode.customer.CustomerResponse;
-import com.derocode.customer.CustomerRequest;
 
 import java.util.List;
 import java.util.Map;
 
 @Component
 @Slf4j
-public class CustomerGrpcClient {
+public class OrderGrpcClient {
 
-    private final CustomerServiceGrpc.CustomerServiceBlockingStub stub;
+    private final OrderServiceGrpc.OrderServiceBlockingStub stub;
 
-    public CustomerGrpcClient(@Value("${grpc.client.customer.address}") String host) {
+    public OrderGrpcClient(@Value("${grpc.client.order.address}") String host) {
 
-//                GrpcTracing grpcTracing = GrpcTracing.create(
+//        GrpcTracing grpcTracing = GrpcTracing.create(
 //                Tracing.newBuilder()
 //                        .localIp("127.0.0.1")
 //                        .localPort(9144)
-//                        .localServiceName("CustomerService")
+//                        .localServiceName("OrderService")
 //                        .build()
-//                );
+//        );
 
         ManagedChannel managedChannel = ManagedChannelBuilder
                 .forTarget(host)
                 .defaultServiceConfig(Map.of(
                         "methodConfig", List.of(Map.of(
-                                "name", List.of(Map.of("service","com.derocode.customer.CustomerService")),
+                                "name", List.of(Map.of("service","com.derocode.order.OrderService")),
                                 "retryPolicy", Map.of(
                                         "maxAttempts", 5,
                                         "initialBackoff", "0.5s",
@@ -48,12 +46,11 @@ public class CustomerGrpcClient {
                 .enableRetry()
                 .usePlaintext()
                 .build();
-
-        this.stub = CustomerServiceGrpc.newBlockingStub(managedChannel);
+        this.stub = OrderServiceGrpc.newBlockingStub(managedChannel);
     }
 
-    public CustomerResponse getCustomerById(CustomerRequest request) {
-        return stub.getCustomerById(request);
+    public OrderResponse retrieveOrder(OrderRequest request){
+        return stub.getOrder(request);
     }
 
 }
