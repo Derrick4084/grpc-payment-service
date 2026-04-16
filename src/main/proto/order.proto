@@ -68,16 +68,7 @@ message CreateOrderRequest {
   string customerId=3;
   repeated CreateOrderProductRequest products=4;
 }
-message CreateOrderResponse {
-  optional int32 orderId=1;
-  optional string reference=2;
-  optional double totalAmount=3;
-  optional string paymentMethod=4;
-  optional string customerId=5;
-  optional string orderDate=6;
-  optional string status=7;
-  repeated CreateOrderProductResponse products=8;
-}
+
 message CreateOrderProductResponse {
   optional string name=1;
   optional double price=2;
@@ -89,6 +80,6 @@ message OrderConfirmationResponse {
 }
 
 service OrderService {
-  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+  rpc CreateOrder(CreateOrderRequest) returns (OrderResponse);
   rpc GetOrder(OrderRequest) returns (OrderResponse);
 }
