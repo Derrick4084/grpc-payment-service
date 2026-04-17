@@ -35,7 +35,7 @@ public class KafkaConsumer {
     private final PaymentRepository repository;
     private final KafkaProducer kafka;
 
-    @KafkaListener(topics = "order-info", id = "orderStatusListener", containerFactory = "orderKafkaListenerContainerFactory")
+    @KafkaListener(topics = "order-info", containerFactory = "orderKafkaListenerContainerFactory")
     public void consumeOrderConfirmation(OrderConfirmation orderConfirmation) throws MessagingException {
 
         String msg = String.format("Consuming message from order-info Topic:: %s", orderConfirmation);
