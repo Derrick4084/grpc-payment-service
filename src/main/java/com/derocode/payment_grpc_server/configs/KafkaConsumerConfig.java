@@ -32,7 +32,7 @@ public class KafkaConsumerConfig {
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         // We will pass VALUE deserializer explicitly in each factory
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "payment");
+//        props.put(ConsumerConfig.GROUP_ID_CONFIG, "payment");
         // JSON trust (safe here since I am controlling producers)
         props.put(JacksonJsonDeserializer.TRUSTED_PACKAGES, "com.derocode.payment_grpc_server.records");
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JacksonJsonDeserializer.class);
