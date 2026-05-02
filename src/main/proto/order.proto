@@ -21,37 +21,39 @@ enum PaymentMethod {
 
 // Request and response for customer assigned to order
 message OrderCustomerRequest{
-  string id=1;
+  int64 id=1;
 }
 message OrderCustomerResponse{
-  optional string id=1;
+  optional int64 id=1;
   optional string firstName=2;
   optional string lastName=3;
   optional string email=4;
   optional OrderCustomerAddress address=5;
 }
 message OrderCustomerAddress{
-  optional string street=1;
-  optional string houseNumber=2;
-  optional int64 zipCode=3;
+  optional string houseNumber=1;
+  optional string street=2;
+  optional string city=3;
+  optional string state=4;
+  optional string zipCode=5;
 }
 
 // Request and return for find order by Id
 message OrderRequest {
-  int32 id=1;
+  int64 id=1;
 }
 message OrderResponse {
-  optional int32 orderId=1;
+  optional int64 orderId=1;
   optional string reference=2;
   optional double totalAmount=3;
   optional string paymentMethod=4;
-  optional string customerId=5;
+  optional int64 customerId=5;
   optional string orderDate=6;
   optional string status=7;
   repeated OrderProductResponse products=8;
 }
 message OrderProductResponse {
-  optional int32 productId=1;
+  optional int64 productId=1;
   optional string name=2;
   optional double price=3;
   optional double quantity=4;
@@ -59,14 +61,13 @@ message OrderProductResponse {
 
 // Request and response for creating an order
 message CreateOrderProductRequest {
-  int32 productId=1;
+  int64 productId=1;
   double quantity=2;
 }
 message CreateOrderRequest {
-  string reference=1;
-  string paymentMethod=2;
-  string customerId=3;
-  repeated CreateOrderProductRequest products=4;
+  string paymentMethod=1;
+  int64 customerId=2;
+  repeated CreateOrderProductRequest products=3;
 }
 
 message CreateOrderProductResponse {
@@ -76,7 +77,7 @@ message CreateOrderProductResponse {
 }
 
 message OrderConfirmationResponse {
-  optional int32 id=1;
+  optional int64 id=1;
 }
 
 service OrderService {

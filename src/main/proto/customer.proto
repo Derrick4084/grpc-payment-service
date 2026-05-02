@@ -5,16 +5,20 @@ option java_package="com.derocode.customer";
 option java_multiple_files=true;
 option java_outer_classname="CustomerProto";
 
-message CustomerRequest{
-  string id=1;
+message CustomerRequestById{
+  int64 id=1;
 }
 
-message AddCustomerAddress {
-  optional string houseNumber=1;
-  optional string street=2;
-  optional string city=3;
-  optional string state=4;
-  optional string zipCode=5;
+message CustomerRequestByEmail{
+  string email=1;
+}
+
+message CustomerResponse{
+  optional int64 id=1;
+  optional string firstName=2;
+  optional string lastName=3;
+  optional string email=4;
+  repeated CustomerResponseAddress addresses=5;
 }
 
 message CustomerResponseAddress {
@@ -25,19 +29,19 @@ message CustomerResponseAddress {
   optional string zipCode=5;
 }
 
-message CustomerResponse{
-  optional string id=1;
-  optional string firstName=2;
-  optional string lastName=3;
-  optional string email=4;
-  repeated CustomerResponseAddress addresses=5;
-}
-
 message AddCustomerRequest{
   optional string firstName=1;
   optional string lastName=2;
   optional string email=3;
   repeated AddCustomerAddress addresses=4;
+}
+
+message AddCustomerAddress {
+  optional string houseNumber=1;
+  optional string street=2;
+  optional string city=3;
+  optional string state=4;
+  optional string zipCode=5;
 }
 
 message CustomerResponseList{
@@ -51,10 +55,12 @@ service CustomerService{
 
   rpc AddCustomer(AddCustomerRequest) returns (CustomerResponse);
 
-  rpc GetCustomerById(CustomerRequest) returns (CustomerResponse);
+  rpc GetCustomerById(CustomerRequestById) returns (CustomerResponse);
+
+  rpc GetCustomerByEmail(CustomerRequestByEmail) returns (CustomerResponse);
 
   rpc GetAllCustomers(Empty) returns (CustomerResponseList);
 
-  rpc DeleteCustomer(CustomerRequest) returns (Empty);
+  rpc DeleteCustomer(CustomerRequestById) returns (Empty);
 
 }

@@ -6,6 +6,8 @@ import com.derocode.order.OrderResponse;
 import com.derocode.order.OrderRequest;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -49,8 +51,16 @@ public class OrderGrpcClient {
         this.stub = OrderServiceGrpc.newBlockingStub(managedChannel);
     }
 
-    public OrderResponse retrieveOrder(OrderRequest request){
-        return stub.getOrder(request);
+    public OrderResponse getOrder(OrderRequest request){
+        OrderResponse response = null;
+        try {
+            response = stub.getOrder(request);
+        } catch (StatusRuntimeException e) {
+            if (e.getStatus().getCode() == Status.Code.NOT_FOUND) {
+                System.out.println(e.getStatus().getDescription());
+            }
+            return null;
+        }
+        return response;
     }
-
 }

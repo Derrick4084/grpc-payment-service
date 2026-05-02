@@ -5,12 +5,15 @@ import brave.Tracing;
 import brave.grpc.GrpcTracing;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import com.derocode.customer.CustomerServiceGrpc;
 import com.derocode.customer.CustomerResponse;
-import com.derocode.customer.CustomerRequest;
+import com.derocode.customer.CustomerRequestById;
+
 
 import java.util.List;
 import java.util.Map;
@@ -52,8 +55,17 @@ public class CustomerGrpcClient {
         this.stub = CustomerServiceGrpc.newBlockingStub(managedChannel);
     }
 
-    public CustomerResponse getCustomerById(CustomerRequest request) {
-        return stub.getCustomerById(request);
+    public CustomerResponse getCustomerById(CustomerRequestById request) {
+        CustomerResponse response = null;
+        try {
+            response = stub.getCustomerById(request);
+        } catch (StatusRuntimeException e) {
+            if (e.getStatus().getCode() == Status.Code.NOT_FOUND) {
+                System.out.println(e.getStatus().getDescription());
+            }
+            return null;
+        }
+        return response;
     }
 
 }

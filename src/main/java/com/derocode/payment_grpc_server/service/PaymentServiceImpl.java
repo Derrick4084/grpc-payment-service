@@ -31,28 +31,19 @@ public class PaymentServiceImpl extends PaymentServiceGrpc.PaymentServiceImplBas
     private final KafkaProducer kafkaProducerService;
     private final LombokMapperImpl lombokMapper;
 
-    private Integer longToInt(Long value) {
-        if (value == null) return null;
-        if (value > Integer.MAX_VALUE || value < Integer.MIN_VALUE) {
-            throw new IllegalArgumentException("Value out of int range: " + value);
-        }
-        return value.intValue();
-    }
-
     @Override
     public void createPayment(PaymentRequest request, StreamObserver<PaymentResponse> responseObserver) {
 
+        Payment entity = lombokMapper.reqToEntity(request);
+        entity.setStatus(PaymentStatus.ACCEPTED);
         try{
-            Payment entity = lombokMapper.reqToEntity(request);
-            entity.setStatus(PaymentStatus.ACCEPTED);
-
             Payment savedEntity = null;
             try{
                 savedEntity = paymentRepository.save(entity);
             } catch (RuntimeException e) {
                 PaymentConfirmation paymentConfirmation = lombokMapper.errorPaymentConfirmation(request);
 
-                log.info("Kafka payment failure with body: <{}>", paymentConfirmation);
+                log.warn("Kafka payment failure with body: <{}>", paymentConfirmation);
                 kafkaProducerService.sendMessage(paymentConfirmation);
 
                 log.error("Unhandled exception in savePayment", e);
@@ -85,7 +76,7 @@ public class PaymentServiceImpl extends PaymentServiceGrpc.PaymentServiceImplBas
 
     @Override
     public void getPayment(GetPaymentRequest request, StreamObserver<PaymentResponse> responseObserver) {
-        Optional<Payment> payment = paymentRepository.findById(longToInt(request.getId()));
+        Optional<Payment> payment = paymentRepository.findById(request.getId());
         if(payment.isEmpty())
         {
             log.error("No payment found with id: {}", request.getId());

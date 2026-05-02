@@ -8,10 +8,10 @@ import com.derocode.payment_grpc_server.mapper.LombokMapperImpl;
 import com.derocode.payment_grpc_server.models.Payment;
 import com.derocode.payment_grpc_server.models.PaymentStatus;
 import com.derocode.payment_grpc_server.records.OrderConfirmation;
+import com.derocode.customer.CustomerRequestById;
 import com.derocode.order.OrderResponse;
 import com.derocode.order.OrderRequest;
 import com.derocode.customer.CustomerResponse;
-import com.derocode.customer.CustomerRequest;
 import com.derocode.payment_grpc_server.records.PaymentConfirmation;
 import com.derocode.payment_grpc_server.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,6 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.MessagingException;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Service
@@ -44,27 +43,25 @@ public class KafkaConsumer {
         String status = orderConfirmation.getStatus();
 
         if(Objects.equals(status,"PENDING_PAYMENT")) {
-            OrderResponse orderResponse = orderGrpcClient.retrieveOrder(
+            OrderResponse orderResponse = orderGrpcClient.getOrder(
                     OrderRequest.newBuilder()
                             .setId(orderConfirmation.getOrderId())
                             .build()
             );
-            CustomerResponse customerResponse = customerGrpcClient.getCustomerById(
-                    CustomerRequest.newBuilder()
-                            .setId(orderResponse.getCustomerId())
-                            .build()
-            );
+//            CustomerResponse customerResponse = customerGrpcClient.getCustomerById(
+//                    CustomerRequestById.newBuilder()
+//                            .setId(orderResponse.getCustomerId())
+//                            .build()
+//            );
 
             Payment entity = lombokMapper.respToEntity(orderResponse);
             entity.setStatus(PaymentStatus.ACCEPTED);
             Payment savedPayment = repository.save(entity);
-
             PaymentConfirmation paymentConfirmation = lombokMapper.entityToPaymentConfirmation(savedPayment);
             paymentConfirmation.setCustomerFirstName(orderConfirmation.getCustomerFirstName());
             paymentConfirmation.setCustomerLastName(orderConfirmation.getCustomerLastName());
             paymentConfirmation.setCustomerEmail(orderConfirmation.getCustomerEmail());
             paymentConfirmation.setStatus(PaymentStatus.ACCEPTED.name());
-
             kafka.sendMessage(paymentConfirmation);
 
         }
