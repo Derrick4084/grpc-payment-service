@@ -9,6 +9,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -52,15 +53,6 @@ public class OrderGrpcClient {
     }
 
     public OrderResponse getOrder(OrderRequest request){
-        OrderResponse response = null;
-        try {
-            response = stub.getOrder(request);
-        } catch (StatusRuntimeException e) {
-            if (e.getStatus().getCode() == Status.Code.NOT_FOUND) {
-                System.out.println(e.getStatus().getDescription());
-            }
-            return null;
-        }
-        return response;
+        return stub.getOrder(request);
     }
 }

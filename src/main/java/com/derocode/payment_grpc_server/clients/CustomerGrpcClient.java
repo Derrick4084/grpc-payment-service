@@ -56,16 +56,7 @@ public class CustomerGrpcClient {
     }
 
     public CustomerResponse getCustomerById(CustomerRequestById request) {
-        CustomerResponse response = null;
-        try {
-            response = stub.getCustomerById(request);
-        } catch (StatusRuntimeException e) {
-            if (e.getStatus().getCode() == Status.Code.NOT_FOUND) {
-                System.out.println(e.getStatus().getDescription());
-            }
-            return null;
-        }
-        return response;
+       return stub.getCustomerById(request);
     }
 
 }

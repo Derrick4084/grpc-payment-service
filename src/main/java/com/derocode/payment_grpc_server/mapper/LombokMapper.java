@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 )
 public interface LombokMapper {
 
-//    @Mapping(target = "orderId", source = "orderId")
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "amount", source = "totalAmount", qualifiedByName = "doubleToBigDecimal")
     @Mapping(target = "paymentMethod", qualifiedByName = "paymentMethodObject")
@@ -30,8 +29,7 @@ public interface LombokMapper {
     @Mapping(target = "lastModifiedDate", ignore = true)
     Payment respToEntity(OrderResponse response);
 
-//    @Mapping(target = "orderId", source = "orderId")
-//    @Mapping(target = "orderReference", source = "orderReference")
+
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "amount", qualifiedByName = "doubleToBigDecimal")
     @Mapping(target = "paymentMethod", qualifiedByName = "paymentMethodObject")
@@ -40,10 +38,7 @@ public interface LombokMapper {
     @Mapping(target = "lastModifiedDate", ignore = true)
     Payment reqToEntity(PaymentRequest request);
 
-//    @Mapping(target = "id", source = "id")
-//    @Mapping(target = "orderId", source = "orderId")
-//    @Mapping(target = "orderReference", source = "orderReference")
-//    @Mapping(target = "paymentDate", source = "paymentDate")
+
     @Mapping(target = "amount", source = "amount", qualifiedByName = "bigDecimalToDouble")
     @Mapping(target = "paymentMethod", source = "paymentMethod", qualifiedByName = "paymentMethodString")
     @Mapping(target = "status", source = "status", qualifiedByName = "paymentStatusString")
@@ -62,13 +57,6 @@ public interface LombokMapper {
     @Mapping(target = "customerEmail", ignore = true)
     PaymentConfirmation entityToPaymentConfirmation(Payment entity);
 
-//    @Mapping(target = "paymentMethod", source = "paymentMethod")
-//    @Mapping(target = "orderId", source = "orderId")
-//    @Mapping(target = "orderReference", source = "orderReference")
-//    @Mapping(target = "amount", source = "amount")
-//    @Mapping(target = "customerFirstName", source = "customerFirstName")
-//    @Mapping(target = "customerLastName", source = "customerLastName")
-//    @Mapping(target = "customerEmail", source = "customerEmail")
     @Mapping(target = "status", expression = "java(com.derocode.payment_grpc_server.models.PaymentStatus.ERROR.name())")
     @Mapping(target = "paymentId", ignore = true)
     @Mapping(target = "paymentDate", ignore = true)

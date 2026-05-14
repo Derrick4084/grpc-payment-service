@@ -1,19 +1,27 @@
 package com.derocode.payment_grpc_server.configs;
 
+import com.derocode.payment_grpc_server.exceptions.NonRetryableKafkaException;
 import com.derocode.payment_grpc_server.records.OrderConfirmation;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.ContainerProperties;
+import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
+import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.kafka.support.ExponentialBackOffWithMaxRetries;
 import org.springframework.kafka.support.serializer.JacksonJsonDeserializer;
+import org.springframework.util.backoff.FixedBackOff;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +32,7 @@ public class KafkaConsumerConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootStrapServers;
 
-    private Map<String, Object> baseProps() {
+    private @NonNull Map<String, Object> baseProps() {
         Map<String, Object> props = new HashMap<>();
 
         // Core Kafka config
@@ -54,6 +62,34 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
+    public DefaultErrorHandler errorHandler(KafkaTemplate<Object, Object> kafkaTemplate) {
+
+        // Sends failed messages to: <original-topic>.DLT
+        DeadLetterPublishingRecoverer recoverer =
+                new DeadLetterPublishingRecoverer(kafkaTemplate);
+
+        // Retry 3 times with 2s delay between attempts
+//        FixedBackOff backOff = new FixedBackOff(2000L, 3);
+
+        ExponentialBackOffWithMaxRetries backOff = new ExponentialBackOffWithMaxRetries(3);
+        backOff.setInitialInterval(1000L);
+        backOff.setMultiplier(2.0);
+        backOff.setMaxInterval(10000L);
+
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, backOff);
+
+        // ✅ Mark which exceptions should NOT be retried
+        errorHandler.addNotRetryableExceptions(
+                NonRetryableKafkaException.class,
+                IllegalArgumentException.class,
+                OptimisticLockingFailureException.class
+        );
+
+        // ✅ Everything else will be retried
+        return errorHandler;
+    }
+
+    @Bean
     public ConsumerFactory<String, OrderConfirmation> orderConsumerFactory() {
         Map<String, Object> props = baseProps();
         return new DefaultKafkaConsumerFactory<>(
@@ -64,9 +100,10 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String,OrderConfirmation> orderKafkaListenerContainerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String,OrderConfirmation> orderKafkaListenerContainerFactory(DefaultErrorHandler handler) {
         ConcurrentKafkaListenerContainerFactory<String,OrderConfirmation> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(orderConsumerFactory());
+        factory.setCommonErrorHandler(handler);
         factory.setConcurrency(3);
         factory.getContainerProperties().setPollTimeout(3000);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);

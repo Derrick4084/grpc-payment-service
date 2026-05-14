@@ -34,7 +34,7 @@ public class Payment {
     @Enumerated(STRING)
     private PaymentStatus status;
 
-    private Integer orderId;
+    private Long orderId;
 
     private String orderReference;
 

@@ -12,7 +12,7 @@ import java.util.Objects;
 @Setter
 @NoArgsConstructor
 public class OrderConfirmation {
-    private Integer orderId;
+    private Long orderId;
     private String reference;
     private String status;
     private BigDecimal totalAmount;
@@ -21,10 +21,11 @@ public class OrderConfirmation {
     private String customerFirstName;
     private String customerLastName;
     private String customerEmail;
+    private String eventId;
 
     @Override
     public int hashCode() {
-        return Objects.hash(orderId, reference, status, totalAmount, paymentMethod, customerFirstName, customerLastName, customerEmail);
+        return Objects.hash(orderId, reference, status, totalAmount, paymentMethod, customerFirstName, customerLastName, customerEmail, eventId);
     }
 
     @Override
@@ -37,6 +38,7 @@ public class OrderConfirmation {
                 "paymentMethod=" + paymentMethod + ", " +
                 "customerFirstName=" + customerFirstName + ", " +
                 "customerLastName=" + customerLastName + ", " +
-                "customerEmail=" + customerEmail + ']';
+                "customerEmail=" + customerEmail + ", " +
+                "eventId=" + eventId + ']';
     }
 }

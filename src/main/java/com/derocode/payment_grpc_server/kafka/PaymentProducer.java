@@ -4,14 +4,12 @@ import com.derocode.payment_grpc_server.records.PaymentConfirmation;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
-
 @Service
-public class KafkaProducer {
+public class PaymentProducer {
 
     private final KafkaTemplate<String, PaymentConfirmation> kafkaTemplate;
 
-    public KafkaProducer(KafkaTemplate<String, PaymentConfirmation> kafkaTemplate) {
+    public PaymentProducer(KafkaTemplate<String, PaymentConfirmation> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
 

@@ -1,27 +1,31 @@
 package com.derocode.payment_grpc_server.records;
 
 import lombok.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Getter
 @Setter
 @NoArgsConstructor
 public class PaymentConfirmation {
-    private Integer paymentId;
-    private String paymentDate;
+    private Long paymentId;
+    private LocalDateTime paymentDate;
     private String paymentMethod;
-    private Integer orderId;
+    private Long orderId;
     private String orderReference;
-    private double amount;
+    private BigDecimal amount;
     private String status;
     private String customerFirstName;
     private String customerLastName;
     private String customerEmail;
+    private String eventId;
 
 
     @Override
     public int hashCode() {
-        return Objects.hash(paymentId, paymentDate, paymentMethod, orderId, orderReference, amount, status, customerFirstName, customerLastName, customerEmail);
+        return Objects.hash(paymentId, paymentDate, paymentMethod, orderId, orderReference, amount, status, customerFirstName, customerLastName, customerEmail, eventId);
     }
 
     @Override
@@ -36,7 +40,8 @@ public class PaymentConfirmation {
                 "status=" + status + ", " +
                 "customerFirstName=" + customerFirstName + ", " +
                 "customerLastName=" + customerLastName + ", " +
-                "customerEmail=" + customerEmail + ']';
+                "customerEmail=" + customerEmail + ", " +
+                "eventId=" + eventId + ']';
     }
 
 }

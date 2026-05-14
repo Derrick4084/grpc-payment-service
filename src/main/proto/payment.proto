@@ -27,7 +27,7 @@ message GetPaymentRequest {
 message PaymentRequest {
   double amount=1;
   string paymentMethod=2;
-  int32 orderId=3;
+  int64 orderId=3;
   string orderReference=4;
   string customerFirstName=5;
   string customerLastName=6;
@@ -35,11 +35,11 @@ message PaymentRequest {
 }
 
 message PaymentResponse {
-  optional int32 id=1;
+  optional int64 id=1;
   optional double amount=2;
   optional string paymentMethod=3;
   optional string status=4;
-  optional int32 orderId=5;
+  optional int64 orderId=5;
   optional string orderReference=6;
   optional google.protobuf.Timestamp paymentDate=7;
 }
