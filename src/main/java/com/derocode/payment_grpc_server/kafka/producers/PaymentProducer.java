@@ -1,4 +1,4 @@
-package com.derocode.payment_grpc_server.kafka;
+package com.derocode.payment_grpc_server.kafka.producers;
 
 import com.derocode.payment_grpc_server.records.PaymentConfirmation;
 import org.springframework.kafka.core.KafkaTemplate;

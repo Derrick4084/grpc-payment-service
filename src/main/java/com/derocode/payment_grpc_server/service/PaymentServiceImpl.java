@@ -9,7 +9,7 @@ import com.derocode.payment.PaymentRequest;
 import com.derocode.payment.PaymentServiceGrpc;
 import com.derocode.payment_grpc_server.clients.OrderGrpcClient;
 import com.derocode.payment_grpc_server.configs.ServerInterceptorConfig;
-import com.derocode.payment_grpc_server.kafka.PaymentProducer;
+import com.derocode.payment_grpc_server.kafka.producers.PaymentProducer;
 import com.derocode.payment_grpc_server.mapper.LombokMapperImpl;
 import com.derocode.payment_grpc_server.models.Payment;
 import com.derocode.payment_grpc_server.models.PaymentStatus;
@@ -20,8 +20,10 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.grpc.server.service.GrpcService;
+import org.springframework.messaging.MessagingException;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -36,62 +38,79 @@ public class PaymentServiceImpl extends PaymentServiceGrpc.PaymentServiceImplBas
     private final LombokMapperImpl lombokMapper;
     private final OrderGrpcClient orderGrpcClient;
 
-    private String generateEventId() {
+    private @NonNull String generateEventId() {
         return UUID.randomUUID().toString().toUpperCase();
     }
 
     @Override
     public void createPayment(PaymentRequest request, StreamObserver<PaymentResponse> responseObserver) {
 
-        // Check to see if there is an order for this payment
         try {
             OrderResponse orderResponse =
                     orderGrpcClient.getOrder(OrderRequest.newBuilder()
                             .setId(request.getOrderId())
                             .build());
-        } catch (StatusRuntimeException e) {
-            responseObserver.onError(
-                    Status.NOT_FOUND
-                            .withDescription("Order not found for this payment")
-                            .withCause(e)
-                            .asRuntimeException()
-            );
-        }
 
-        // Set the status of the payment ACCEPTED or DENIED
-        Payment entity = lombokMapper.reqToEntity(request);
-        entity.setStatus(PaymentStatus.ACCEPTED);
+            Payment entity = lombokMapper.reqToEntity(request);
+            entity.setStatus(PaymentStatus.ACCEPTED);
 
-        // Save the payment to the database
-        Payment savedEntity = null;
-        try {
-            savedEntity = paymentRepository.save(entity);
+            Payment savedEntity = paymentRepository.save(entity);
+
+            // Create the payment confirmation for kafka
+            PaymentConfirmation paymentConfirmation = lombokMapper.entityToPaymentConfirmation(savedEntity);
+            paymentConfirmation.setCustomerFirstName(request.getCustomerFirstName());
+            paymentConfirmation.setCustomerLastName(request.getCustomerLastName());
+            paymentConfirmation.setCustomerEmail(request.getCustomerEmail());
+
+            paymentConfirmation.setStatus(PaymentStatus.ACCEPTED.name());
+            paymentConfirmation.setEventId(generateEventId());
+            PaymentResponse paymentResponse = lombokMapper.entityToPaymentResponse(savedEntity);
+
+            // Send payment to kafka
+            log.info("Sending Kafka payment success with body: <{}>", paymentConfirmation);
+            kafka.sendMessage(paymentConfirmation);
+
+            // Send grpc response
+            responseObserver.onNext(paymentResponse);
+            responseObserver.onCompleted();
+
+        } catch (StatusRuntimeException sre) {
+            switch (sre.getStatus().getCode()) {
+                case NOT_FOUND -> responseObserver.onError(
+                        Status.NOT_FOUND
+                                .withDescription(sre.getStatus().getDescription())
+                                .asRuntimeException());
+                case ALREADY_EXISTS -> responseObserver.onError(
+                        Status.ALREADY_EXISTS
+                                .withDescription(sre.getStatus().getDescription())
+                                .asRuntimeException()
+                );
+                case INVALID_ARGUMENT -> responseObserver.onError(
+                        Status.INVALID_ARGUMENT
+                                .withDescription(sre.getStatus().getDescription())
+                                .asRuntimeException()
+                );
+                default -> responseObserver.onError(
+                        sre.getStatus()
+                                .withCause(sre)
+                                .asRuntimeException()
+                );
+            }
         } catch (IllegalArgumentException | OptimisticLockingFailureException e) {
             responseObserver.onError(
                     Status.ALREADY_EXISTS
-                            .withDescription("Problem saving payment")
+                            .withDescription("Payment already exists for this order")
+                            .asRuntimeException()
+            );
+        } catch (Exception e) {
+            log.error("Unexpected error while creating payment", e);
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Internal server error")
                             .withCause(e)
                             .asRuntimeException()
             );
         }
-
-        // Create the payment confirmation for kafka
-        PaymentConfirmation paymentConfirmation = lombokMapper.entityToPaymentConfirmation(savedEntity);
-        paymentConfirmation.setCustomerFirstName(request.getCustomerFirstName());
-        paymentConfirmation.setCustomerLastName(request.getCustomerLastName());
-        paymentConfirmation.setCustomerEmail(request.getCustomerEmail());
-        paymentConfirmation.setStatus(PaymentStatus.ACCEPTED.name());
-        paymentConfirmation.setEventId(generateEventId());
-        PaymentResponse paymentResponse = lombokMapper.entityToPaymentResponse(savedEntity);
-        responseObserver.onNext(paymentResponse);
-        responseObserver.onCompleted();
-
-        // Send payment to kafka
-        log.info("Sending Kafka payment success with body: <{}>", paymentConfirmation);
-        kafka.sendMessage(paymentConfirmation);
-
-
-
    }
 
     @Override
@@ -111,6 +130,5 @@ public class PaymentServiceImpl extends PaymentServiceGrpc.PaymentServiceImplBas
             responseObserver.onCompleted();
 
         }
-
     }
 }

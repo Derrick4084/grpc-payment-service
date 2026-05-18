@@ -1,9 +1,11 @@
-package com.derocode.payment_grpc_server.kafka;
+package com.derocode.payment_grpc_server.kafka.consumers;
 
 import com.derocode.payment_grpc_server.clients.OrderGrpcClient;
 
 
+import com.derocode.payment_grpc_server.exceptions.NonRetryableKafkaException;
 import com.derocode.payment_grpc_server.exceptions.RetryableKafkaException;
+import com.derocode.payment_grpc_server.kafka.producers.PaymentProducer;
 import com.derocode.payment_grpc_server.mapper.LombokMapperImpl;
 import com.derocode.payment_grpc_server.models.Event;
 import com.derocode.payment_grpc_server.models.Payment;
@@ -40,7 +42,6 @@ public class OrderConsumer {
         String msg = String.format("Consuming message from order-info Topic:: %s", orderConfirmation);
         log.info(msg);
 
-
         String eventId = orderConfirmation.getEventId();
         try {
             eventRepository.save(Event.builder().eventId(eventId).build());
@@ -49,7 +50,6 @@ public class OrderConsumer {
             return;
         }
 
-        String status = orderConfirmation.getStatus();
         if (!"PENDING_PAYMENT".equals(orderConfirmation.getStatus())) {
             return;
         };
@@ -62,7 +62,11 @@ public class OrderConsumer {
                             .build()
             );
         } catch (StatusRuntimeException e) {
-            throw new RetryableKafkaException(e.getMessage(), e.getCause());
+            switch (e.getStatus().getCode()) {
+                case NOT_FOUND, INVALID_ARGUMENT, PERMISSION_DENIED, ALREADY_EXISTS -> throw new NonRetryableKafkaException(e.getStatus().getDescription());
+                default -> throw e; // retryable (e.g., UNAVAILABLE, DEADLINE_EXCEEDED)
+            }
+//            throw new RetryableKafkaException(e.getMessage(), e.getCause());
 
         }
         Payment entity = lombokMapper.respToEntity(orderResponse);
