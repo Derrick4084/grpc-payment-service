@@ -7,7 +7,6 @@ import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.support.serializer.JacksonJsonSerializer;
 
@@ -19,8 +18,7 @@ public class ProducerBaseProps {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootStrapServers;
 
-    @Bean
-    public @NonNull Map<String, Object> baseConfig() {
+    public @NonNull Map<String, Object> producerProps() {
         Map<String, Object> props = new HashMap<>();
         props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootStrapServers);
         props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG,"SASL_SSL");

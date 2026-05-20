@@ -24,7 +24,7 @@ public class KafkaConsumerConfig {
 
     @Bean
     public ConsumerFactory<String, OrderConfirmation> orderConsumerFactory() {
-        Map<String, Object> props = consumerBaseProps.baseConfig();
+        Map<String, Object> props = consumerBaseProps.consumerProps();
         return new DefaultKafkaConsumerFactory<>(
                 props,
                 new StringDeserializer(),

@@ -21,7 +21,7 @@ public class KafkaProducerConfig {
 
     @Bean
     public ProducerFactory<String, PaymentConfirmation> producerFactory() {
-        Map<String, Object> config = new HashMap<>(producerBaseProps.baseConfig());
+        Map<String, Object> config = new HashMap<>(producerBaseProps.producerProps());
         config.put(JacksonJsonSerializer.TYPE_MAPPINGS, "paymentConfirmation:com.derocode.payment_grpc_server.records.PaymentConfirmation");
         return new DefaultKafkaProducerFactory<>(config);
     }

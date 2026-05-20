@@ -11,7 +11,7 @@ import org.springframework.kafka.support.ExponentialBackOffWithMaxRetries;
 @Configuration
 public class KafkaDefaultHandler {
     @Bean
-    public DefaultErrorHandler errorHandler(KafkaTemplate<Object, Object> kafkaTemplate) {
+    public DefaultErrorHandler errorHandler(KafkaTemplate<String, Object> kafkaTemplate) {
         // Sends failed messages to: <original-topic>.DLT
         DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(kafkaTemplate);
         // Retry 3 times with 2s delay between attempts
