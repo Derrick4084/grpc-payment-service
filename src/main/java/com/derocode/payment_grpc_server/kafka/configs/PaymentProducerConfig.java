@@ -15,20 +15,20 @@ import java.util.Map;
 
 @Configuration
 @RequiredArgsConstructor
-public class KafkaProducerConfig {
+public class PaymentProducerConfig {
 
     private final ProducerBaseProps producerBaseProps;
 
     @Bean
-    public ProducerFactory<String, PaymentConfirmation> producerFactory() {
+    public ProducerFactory<String, PaymentConfirmation> paymentConfirmationProducerFactoryFactory() {
         Map<String, Object> config = new HashMap<>(producerBaseProps.producerProps());
         config.put(JacksonJsonSerializer.TYPE_MAPPINGS, "paymentConfirmation:com.derocode.payment_grpc_server.records.PaymentConfirmation");
         return new DefaultKafkaProducerFactory<>(config);
     }
 
     @Bean
-    public KafkaTemplate<String, PaymentConfirmation> kafkaTemplate() {
-        return new KafkaTemplate<>(producerFactory());
+    public KafkaTemplate<String, PaymentConfirmation> paymentConfirmationKafkaTemplate() {
+        return new KafkaTemplate<>(paymentConfirmationProducerFactoryFactory());
     }
 
 
